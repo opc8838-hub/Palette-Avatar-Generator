@@ -1,0 +1,644 @@
+{
+  "version": 5,
+  "note": "按来源分类的可扩展色库。夜光能量保留 6 个原图主色与每色 2 款 OKLCH 衍生明暗色；衍生色不冒充原图精确 HEX。新增 Alex Cristache 图中色值按原图 HEX 收录，并以 OKLab 色差筛除与现有色卡、彼此视觉接近的颜色。",
+  "series": [
+    {
+      "id": "soft",
+      "name": "参考柔彩",
+      "subtitle": "低饱和 · 轻盈",
+      "source": "最初两张头像参考图",
+      "accent": "#F7BCDA",
+      "cards": [
+        {
+          "name": "柔红",
+          "id": "C02-3",
+          "hex": "#FEBFBE",
+          "oklch": [
+            0.862,
+            0.072,
+            20
+          ],
+          "reference": false
+        },
+        {
+          "name": "杏橙",
+          "id": "C05-3",
+          "hex": "#F9D3AF",
+          "oklch": [
+            0.891,
+            0.064,
+            65
+          ],
+          "reference": false
+        },
+        {
+          "name": "柠黄",
+          "id": "C07-3",
+          "hex": "#EEE1B0",
+          "oklch": [
+            0.908,
+            0.065,
+            95
+          ],
+          "reference": false
+        },
+        {
+          "name": "黄绿",
+          "id": "C09-3",
+          "hex": "#D3E1BC",
+          "oklch": [
+            0.89,
+            0.052,
+            125
+          ],
+          "reference": false
+        },
+        {
+          "name": "嫩绿",
+          "id": "C10-3",
+          "hex": "#C9E1C3",
+          "oklch": [
+            0.883,
+            0.047,
+            140
+          ],
+          "reference": false
+        },
+        {
+          "name": "薄荷",
+          "id": "C12-3",
+          "hex": "#C5E1D5",
+          "oklch": [
+            0.886,
+            0.034,
+            167.89999999999998
+          ],
+          "reference": true,
+          "referenceFile": "20260924-232959.png"
+        },
+        {
+          "name": "水青",
+          "id": "C14-3",
+          "hex": "#BCE1E3",
+          "oklch": [
+            0.883,
+            0.039,
+            200
+          ],
+          "reference": false
+        },
+        {
+          "name": "天蓝",
+          "id": "C17-3",
+          "hex": "#C0D9F0",
+          "oklch": [
+            0.875,
+            0.042,
+            245
+          ],
+          "reference": false
+        },
+        {
+          "name": "蓝紫",
+          "id": "C18-3",
+          "hex": "#C4D6F5",
+          "oklch": [
+            0.873,
+            0.047,
+            260
+          ],
+          "reference": false
+        },
+        {
+          "name": "薰紫",
+          "id": "C20-3",
+          "hex": "#D5D1F5",
+          "oklch": [
+            0.875,
+            0.05,
+            290
+          ],
+          "reference": false
+        },
+        {
+          "name": "粉紫",
+          "id": "C22-3",
+          "hex": "#E5C7EC",
+          "oklch": [
+            0.867,
+            0.06,
+            320
+          ],
+          "reference": false
+        },
+        {
+          "name": "樱粉",
+          "id": "C24-3",
+          "hex": "#F7BCDA",
+          "oklch": [
+            0.857,
+            0.078,
+            346.9
+          ],
+          "reference": true,
+          "referenceFile": "20260924-232944.png"
+        }
+      ],
+      "family": "original"
+    },
+    {
+      "id": "earth",
+      "name": "柔和大地",
+      "subtitle": "暖棕 · 柔雾",
+      "source": "原有大地色",
+      "accent": "#B18E7D",
+      "cards": [
+        {
+          "id": "E01-3",
+          "name": "米色",
+          "hex": "#E5D7C1",
+          "oklch": [
+            0.885,
+            0.0336,
+            80
+          ],
+          "reference": false
+        },
+        {
+          "id": "E02-3",
+          "name": "沙色",
+          "hex": "#DCC7AB",
+          "oklch": [
+            0.84,
+            0.0451,
+            75
+          ],
+          "reference": false
+        },
+        {
+          "id": "E03-3",
+          "name": "驼色",
+          "hex": "#D1B397",
+          "oklch": [
+            0.785,
+            0.0518,
+            65
+          ],
+          "reference": false
+        },
+        {
+          "id": "E04-3",
+          "name": "奶咖",
+          "hex": "#CFB5A4",
+          "oklch": [
+            0.79,
+            0.0384,
+            55
+          ],
+          "reference": false
+        },
+        {
+          "id": "E05-4",
+          "name": "棕色",
+          "hex": "#B18E7D",
+          "oklch": [
+            0.675,
+            0.049,
+            48
+          ],
+          "reference": false
+        },
+        {
+          "id": "E06-4",
+          "name": "可可",
+          "hex": "#9D827A",
+          "oklch": [
+            0.63,
+            0.0357,
+            38
+          ],
+          "reference": false
+        }
+      ],
+      "family": "original"
+    },
+    {
+      "id": "goals",
+      "name": "活力橙",
+      "subtitle": "明亮 · 果敢",
+      "source": "Goals 参考图",
+      "accent": "#FF7000",
+      "cards": [
+        {
+          "id": "G01",
+          "name": "目标橙",
+          "hex": "#FF7000"
+        },
+        {
+          "id": "G02",
+          "name": "琥珀橙",
+          "hex": "#FFA300"
+        },
+        {
+          "id": "G03",
+          "name": "深橘",
+          "hex": "#FF6209"
+        }
+      ],
+      "family": "design"
+    },
+    {
+      "id": "girlhood",
+      "name": "明快糖果",
+      "subtitle": "跳跃 · 俏皮",
+      "source": "Girlhood 参考图",
+      "accent": "#8AEA6F",
+      "cards": [
+        {
+          "id": "GH01",
+          "name": "丁香紫",
+          "hex": "#E3C8FF"
+        },
+        {
+          "id": "GH02",
+          "name": "青草绿",
+          "hex": "#8AEA6F"
+        },
+        {
+          "id": "GH03",
+          "name": "荧光黄",
+          "hex": "#EAF32A"
+        },
+        {
+          "id": "GH04",
+          "name": "晴空蓝",
+          "hex": "#8CC9FF"
+        },
+        {
+          "id": "GH05",
+          "name": "蜜桃橙",
+          "hex": "#FFC655"
+        }
+      ],
+      "family": "design"
+    },
+    {
+      "id": "curator",
+      "name": "复古对比",
+      "subtitle": "沉稳 · 醒目",
+      "source": "Curator Summit 参考图",
+      "accent": "#351700",
+      "cards": [
+        {
+          "id": "CS01",
+          "name": "深巧克力",
+          "hex": "#351700"
+        },
+        {
+          "id": "CS02",
+          "name": "云天蓝",
+          "hex": "#A3DBFE"
+        },
+        {
+          "id": "CS03",
+          "name": "朱橘",
+          "hex": "#FF722D"
+        }
+      ],
+      "family": "design"
+    },
+    {
+      "id": "abyssale",
+      "name": "鲜明撞色",
+      "subtitle": "浓郁 · 数字感",
+      "source": "Abyssale 参考图",
+      "accent": "#5CEBA9",
+      "cards": [
+        {
+          "id": "A01",
+          "name": "深森林",
+          "hex": "#063138"
+        },
+        {
+          "id": "A02",
+          "name": "鲜薄荷",
+          "hex": "#5CEBA9"
+        },
+        {
+          "id": "A03",
+          "name": "茄紫",
+          "hex": "#5E104E"
+        },
+        {
+          "id": "A04",
+          "name": "亮粉",
+          "hex": "#FFA1FF"
+        },
+        {
+          "id": "A05",
+          "name": "曜紫",
+          "hex": "#351171"
+        },
+        {
+          "id": "A06",
+          "name": "冰蓝",
+          "hex": "#88E1FF"
+        }
+      ],
+      "family": "design"
+    },
+    {
+      "id": "mindful-300",
+      "family": "curated",
+      "name": "夜光能量",
+      "subtitle": "高对比 · 18 款精选",
+      "source": "Mindful Palettes No. 300",
+      "sourceUrl": "https://x.com/AlexCristache/status/2102389981658386433",
+      "rampUrl": "https://x.com/AlexCristache/status/2102720338786496771",
+      "accent": "#8844FF",
+      "cards": [
+        {
+          "id": "MP300-01",
+          "name": "奶油白",
+          "hex": "#FAF3D9"
+        },
+        {
+          "id": "MP300-02",
+          "name": "荧光青柠",
+          "hex": "#CBF85F"
+        },
+        {
+          "id": "MP300-03",
+          "name": "海沫绿",
+          "hex": "#40E0D0"
+        },
+        {
+          "id": "MP300-04",
+          "name": "电光紫",
+          "hex": "#8844FF"
+        },
+        {
+          "id": "MP300-05",
+          "name": "靛蓝紫",
+          "hex": "#3A18B1"
+        },
+        {
+          "id": "MP300-06",
+          "name": "深夜蓝",
+          "hex": "#020035"
+        },
+        {
+          "id": "MP300-R1-04",
+          "name": "奶油白 · 04",
+          "hex": "#DCD8C8",
+          "level": 4,
+          "derived": true
+        },
+        {
+          "id": "MP300-R1-10",
+          "name": "奶油白 · 10",
+          "hex": "#686046",
+          "level": 10,
+          "derived": true
+        },
+        {
+          "id": "MP300-R2-04",
+          "name": "荧光青柠 · 04",
+          "hex": "#C8E58F",
+          "level": 4,
+          "derived": true
+        },
+        {
+          "id": "MP300-R2-10",
+          "name": "荧光青柠 · 10",
+          "hex": "#526B00",
+          "level": 10,
+          "derived": true
+        },
+        {
+          "id": "MP300-R3-04",
+          "name": "海沫绿 · 04",
+          "hex": "#98E9DE",
+          "level": 4,
+          "derived": true
+        },
+        {
+          "id": "MP300-R3-10",
+          "name": "海沫绿 · 10",
+          "hex": "#007067",
+          "level": 10,
+          "derived": true
+        },
+        {
+          "id": "MP300-R4-04",
+          "name": "电光紫 · 04",
+          "hex": "#D9D0FF",
+          "level": 4,
+          "derived": true
+        },
+        {
+          "id": "MP300-R4-10",
+          "name": "电光紫 · 10",
+          "hex": "#7100E7",
+          "level": 10,
+          "derived": true
+        },
+        {
+          "id": "MP300-R5-04",
+          "name": "靛蓝紫 · 04",
+          "hex": "#CFD4FF",
+          "level": 4,
+          "derived": true
+        },
+        {
+          "id": "MP300-R5-10",
+          "name": "靛蓝紫 · 10",
+          "hex": "#5135E5",
+          "level": 10,
+          "derived": true
+        },
+        {
+          "id": "MP300-R6-04",
+          "name": "深夜蓝 · 04",
+          "hex": "#C7D7FF",
+          "level": 4,
+          "derived": true
+        },
+        {
+          "id": "MP300-R6-10",
+          "name": "深夜蓝 · 10",
+          "hex": "#445CA2",
+          "level": 10,
+          "derived": true
+        }
+      ]
+    },
+    {
+      "id": "micro-studies",
+      "family": "curated",
+      "name": "微型色盘",
+      "subtitle": "明暗 · 个性",
+      "source": "Alex Cristache · MicroPalettes",
+      "accent": "#B3B4DD",
+      "cards": [
+        {
+          "id": "MICRO-STUDIES-01",
+          "name": "挚爱紫",
+          "hex": "#B3B4DD",
+          "sourceImage": "照片 1.jpg"
+        },
+        {
+          "id": "MICRO-STUDIES-02",
+          "name": "深梅紫",
+          "hex": "#6D2B50",
+          "sourceImage": "照片 1.jpg"
+        },
+        {
+          "id": "MICRO-STUDIES-03",
+          "name": "自由蓝",
+          "hex": "#0E1531",
+          "sourceImage": "照片 1.jpg"
+        },
+        {
+          "id": "MICRO-STUDIES-04",
+          "name": "堇黑",
+          "hex": "#2F2A41",
+          "sourceImage": "照片 2.jpg"
+        },
+        {
+          "id": "MICRO-STUDIES-05",
+          "name": "温泉水绿",
+          "hex": "#9CCEBC",
+          "sourceImage": "照片 3.jpg"
+        }
+      ]
+    },
+    {
+      "id": "daily-warm",
+      "family": "curated",
+      "name": "每日暖调",
+      "subtitle": "暖色 · 浓淡",
+      "source": "Alex Cristache · Color of the Day",
+      "accent": "#D63D3B",
+      "cards": [
+        {
+          "id": "DAILY-WARM-01",
+          "name": "珊瑚粉",
+          "hex": "#F6A69A",
+          "sourceImage": "照片 8.jpg"
+        },
+        {
+          "id": "DAILY-WARM-02",
+          "name": "能量红",
+          "hex": "#D63D3B",
+          "sourceImage": "照片 13.jpg"
+        },
+        {
+          "id": "DAILY-WARM-03",
+          "name": "秋金",
+          "hex": "#A28B36",
+          "sourceImage": "照片 16.jpg"
+        },
+        {
+          "id": "DAILY-WARM-04",
+          "name": "暗橄榄",
+          "hex": "#404404",
+          "sourceImage": "照片 19.jpg"
+        },
+        {
+          "id": "DAILY-WARM-05",
+          "name": "莓果粉",
+          "hex": "#FF5C8D",
+          "sourceImage": "照片 23.jpg"
+        },
+        {
+          "id": "DAILY-WARM-06",
+          "name": "白桦金",
+          "hex": "#DFB45F",
+          "sourceImage": "照片 25.jpg"
+        },
+        {
+          "id": "DAILY-WARM-07",
+          "name": "醋栗红",
+          "hex": "#A23F5D",
+          "sourceImage": "照片 26.jpg"
+        }
+      ]
+    },
+    {
+      "id": "daily-cool",
+      "family": "curated",
+      "name": "每日冷调",
+      "subtitle": "冷色 · 深浅",
+      "source": "Alex Cristache · Color of the Day",
+      "accent": "#008AAD",
+      "cards": [
+        {
+          "id": "DAILY-COOL-01",
+          "name": "水手蓝",
+          "hex": "#5E7FB5",
+          "sourceImage": "照片 15.jpg"
+        },
+        {
+          "id": "DAILY-COOL-02",
+          "name": "海岛蓝",
+          "hex": "#008AAD",
+          "sourceImage": "照片 20.jpg"
+        },
+        {
+          "id": "DAILY-COOL-03",
+          "name": "铜绿",
+          "hex": "#9DB4A0",
+          "sourceImage": "照片 21.jpg"
+        },
+        {
+          "id": "DAILY-COOL-04",
+          "name": "民谣青",
+          "hex": "#65A19F",
+          "sourceImage": "照片 24.jpg"
+        },
+        {
+          "id": "DAILY-COOL-05",
+          "name": "深港青",
+          "hex": "#0E4D4E",
+          "sourceImage": "照片 28.jpg"
+        },
+        {
+          "id": "DAILY-COOL-06",
+          "name": "虹彩紫",
+          "hex": "#966FD6",
+          "sourceImage": "照片 29.jpg"
+        },
+        {
+          "id": "DAILY-COOL-07",
+          "name": "青绿",
+          "hex": "#33B864",
+          "sourceImage": "照片 31.jpg"
+        },
+        {
+          "id": "DAILY-COOL-08",
+          "name": "鼠尾草蓝",
+          "hex": "#97A3DA",
+          "sourceImage": "照片 33.jpg"
+        }
+      ]
+    }
+  ],
+  "families": [
+    {
+      "id": "original",
+      "name": "原始参考",
+      "description": "头像参考图延伸"
+    },
+    {
+      "id": "design",
+      "name": "设计案例",
+      "description": "品牌视觉配色"
+    },
+    {
+      "id": "curated",
+      "name": "精选配色",
+      "description": "独立配色作品"
+    }
+  ]
+}
