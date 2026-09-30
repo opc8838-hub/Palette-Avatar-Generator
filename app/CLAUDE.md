@@ -16,5 +16,5 @@ screen-materials.js: 补齐外屏摄像头开孔、隐藏镜头部件，并将�
 
 ## Tone Duo adaptation
 avatar-tone.js: 纯函数灰阶与保亮度染色，可运行 Node 测试。
-avatar-engine.js: 本地照片分割、参考图示例提取、头像和设备画布合成、PNG 下载。
+avatar-engine.js: 本地照片分割、默认人物加载、背后文字与头像/设备画布合成、PNG 下载。
 mockup-controller.js: 增加 setCanvas 直接更新内外屏；main.js 暴露 setScreenCanvas，折叠稳定后缓存静态画面。

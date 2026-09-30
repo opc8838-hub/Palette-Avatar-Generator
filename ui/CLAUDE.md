@@ -13,3 +13,5 @@ lib/: viewer 订阅 hook 与类名工具，详见本目录 CLAUDE.md。
 
 ## Tone Duo adaptation
 App.jsx 现为照片、人像模式、背景颜色顺序的编辑器；模式可直接点选，色系先选来源分类再选系列。palette.json 以 families / series 组织可扩展色库，新增颜色按 OKLab 色差去重；夜光能量保留 18 款。styles.css 让桌面端主要控件在单屏可见，移动端自然滚动；上传、色调和导出委托 app/avatar-engine.js。
+
+头像背后文字默认收起，可选本地字体、示例短句并调整位置。桌面端编辑器无论模块是否展开都保持垂直居中，较长内容在面板内滚动。

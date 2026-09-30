@@ -18,51 +18,11 @@ async function decode(src) {
   await image.decode(); return image;
 }
 
-export async function loadReference(which = 'pink') {
-  const image = await decode(`${import.meta.env.BASE_URL}assets/avatar/reference-${which}.png`);
-  // The references are screenshots. Keep every pixel of their circular photo
-  // instead of shrinking it before the phone and export pipelines use it.
-  const n = 1090, out = canvas(n), ctx = highQuality(out.getContext('2d'));
-  ctx.drawImage(image, 97, 846, n, n, 0, 0, n, n);
-  const pixels = ctx.getImageData(0, 0, n, n);
-  const bg = which === 'pink' ? [247, 188, 218] : [197, 225, 213];
-  const total = n * n, visited = new Uint8Array(total), queue = new Int32Array(total);
-  let start = 0, end = 0;
-  const distance = (p) => {
-    const offset = p * 4;
-    return Math.hypot(pixels.data[offset] - bg[0], pixels.data[offset + 1] - bg[1], pixels.data[offset + 2] - bg[2]);
-  };
-  const enqueue = (p) => { if (!visited[p] && distance(p) < 42) { visited[p] = 1; queue[end++] = p; } };
-  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-    const d = Math.hypot(x - n / 2, y - n / 2);
-    if (d > n / 2 - 5) {
-      if (d <= n / 2) enqueue(y * n + x);
-      else pixels.data[(y * n + x) * 4 + 3] = 0;
-    }
-  }
-  while (start < end) {
-    const p = queue[start++], x = p % n;
-    if (x > 0) enqueue(p - 1); if (x < n - 1) enqueue(p + 1);
-    if (p >= n) enqueue(p - n); if (p < total - n) enqueue(p + n);
-  }
-  for (let p = 0; p < total; p++) if (visited[p]) {
-    const alpha = Math.max(0, Math.min(1, (distance(p) - 4) / 35));
-    pixels.data[p * 4 + 3] = Math.round(pixels.data[p * 4 + 3] * alpha);
-    // Undo the pink/green color mixed into antialiased silhouette pixels.
-    // Without this, the old backdrop leaves a visible rim on new colors.
-    if (alpha > .15 && alpha < 1) for (let k = 0; k < 3; k++) {
-      const index = p * 4 + k;
-      pixels.data[index] = Math.max(0, Math.min(255, (pixels.data[index] - (1 - alpha) * bg[k]) / alpha));
-    }
-  }
-  // Remove the screenshot's dark circular boundary without erasing skin that
-  // shares the backdrop's tint. These coordinates apply only to the two demos.
-  for (let py = 0; py < n; py++) for (let px = 0; px < n; px++) {
-    const edge = n / 2 - 5 - Math.hypot(px - n / 2, py - n / 2);
-    pixels.data[(py * n + px) * 4 + 3] *= Math.max(0, Math.min(1, edge));
-  }
-  ctx.putImageData(pixels, 0, 0);
-  return { canvas: out, name: which === 'pink' ? '参考人物 A' : '参考人物 B', reference: true };
+export async function loadDefaultPortrait() {
+  const image = await decode(`${import.meta.env.BASE_URL}assets/avatar/default-portrait-cutout.png`);
+  const out = canvas(image.naturalWidth, image.naturalHeight);
+  highQuality(out.getContext('2d')).drawImage(image, 0, 0);
+  return { canvas: out, name: '默认人物.png' };
 }
 
 let segmenterPromise;
@@ -146,9 +106,45 @@ export function prepareAvatarLayers(source, { zoom = 1, x = 0, y = 0, size = 102
   return { original, neutral, sourcePixels, previewPixels: previewContext.getImageData(0, 0, previewSize, previewSize), previewSize, size };
 }
 
-export function renderPreparedAvatar(layers, { color, mode, strength = .32, size = layers.size }) {
+export const BACK_TEXT_FONTS = [
+  { id: 'display', label: 'Duo Display · 粗体', family: "'Duo Display','Microsoft YaHei',sans-serif", weight: 700 },
+  { id: 'sans', label: '现代黑体', family: "'Microsoft YaHei','PingFang SC',sans-serif", weight: 700 },
+  { id: 'serif', label: '衬线体', family: "Georgia,'SimSun',serif", weight: 700 },
+  { id: 'cinzel', label: 'Cinzel', family: "'Cinzel','Microsoft YaHei',serif", weight: 700 },
+  { id: 'fraunces', label: 'Fraunces', family: "'Fraunces','Microsoft YaHei',serif", weight: 700 },
+  { id: 'instrument', label: 'Instrument Serif', family: "'Instrument Serif','Microsoft YaHei',serif", weight: 400 },
+  { id: 'league', label: 'League Spartan', family: "'League Spartan','Microsoft YaHei',sans-serif", weight: 700 },
+  { id: 'lora', label: 'Lora', family: "'Lora','Microsoft YaHei',serif", weight: 700 },
+  { id: 'manrope', label: 'Manrope', family: "'Manrope','Microsoft YaHei',sans-serif", weight: 700 },
+  { id: 'martian', label: 'Martian Mono', family: "'Martian Mono','Microsoft YaHei',monospace", weight: 700 },
+  { id: 'space', label: 'Space Grotesk', family: "'Space Grotesk','Microsoft YaHei',sans-serif", weight: 700 },
+];
+
+export function drawBackText(ctx, size, textLayer = {}) {
+  const text = String(textLayer.text || '').trim();
+  if (!text) return;
+  const font = BACK_TEXT_FONTS.find((item) => item.id === textLayer.font) || BACK_TEXT_FONTS[0];
+  const lines = text.split(/\r?\n/).slice(0, 8);
+  ctx.save();
+  ctx.fillStyle = textLayer.color || '#111111';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const requestedSize = Math.max(24, Math.min(320, Number(textLayer.size) || 128)) * size / 1024;
+  ctx.font = `${font.weight} ${requestedSize}px ${font.family}`;
+  const widest = Math.max(1, ...lines.map((line) => ctx.measureText(line).width));
+  const actualSize = requestedSize * Math.min(1, size * .9 / widest);
+  ctx.font = `${font.weight} ${actualSize}px ${font.family}`;
+  const centerX = size * (.5 + (Number(textLayer.x) || 0));
+  const centerY = size * (.5 + (Number(textLayer.y) || 0));
+  const lineHeight = actualSize * 1.05;
+  lines.forEach((line, index) => ctx.fillText(line, centerX, centerY + (index - (lines.length - 1) / 2) * lineHeight));
+  ctx.restore();
+}
+
+export function renderPreparedAvatar(layers, { color, mode, strength = .32, size = layers.size, textLayer }) {
   const out = canvas(size), ctx = highQuality(out.getContext('2d'));
   ctx.fillStyle = color; ctx.fillRect(0, 0, size, size);
+  drawBackText(ctx, size, textLayer);
   if (!layers.original) return out;
   if (mode === 'original') ctx.drawImage(layers.original, 0, 0, size, size);
   else if (mode === 'neutral') ctx.drawImage(layers.neutral, 0, 0, size, size);
@@ -186,17 +182,25 @@ function drawPortraitContained(ctx, image, x, y, width, height) {
   ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
 }
 
-export function renderPortraitScreens(primary, { compare = false, secondary = primary } = {}) {
+export function renderPortraitScreens(primary, { compare = false, secondary = primary, textLayer } = {}) {
   const inner = canvas(1335, 939), outer = canvas(630, 917);
   const innerContext = inner.getContext('2d'), outerContext = outer.getContext('2d');
+  const compose = (portrait) => {
+    if (!textLayer?.text?.trim()) return portrait;
+    const layer = canvas(portrait.width, portrait.height), ctx = layer.getContext('2d');
+    drawBackText(ctx, layer.width, textLayer);
+    ctx.drawImage(portrait, 0, 0);
+    return layer;
+  };
+  const first = compose(primary), second = secondary === primary ? first : compose(secondary);
   if (compare) {
-    drawPortraitContained(innerContext, primary, 0, 0, inner.width / 2, inner.height);
-    drawPortraitContained(innerContext, secondary, inner.width / 2, 0, inner.width / 2, inner.height);
+    drawPortraitContained(innerContext, first, 0, 0, inner.width / 2, inner.height);
+    drawPortraitContained(innerContext, second, inner.width / 2, 0, inner.width / 2, inner.height);
     innerContext.fillStyle = '#FFFFFF'; innerContext.fillRect(inner.width / 2 - 2, 0, 4, inner.height);
   } else {
-    drawPortraitContained(innerContext, primary, 0, 0, inner.width, inner.height);
+    drawPortraitContained(innerContext, first, 0, 0, inner.width, inner.height);
   }
-  drawPortraitContained(outerContext, primary, 0, 0, outer.width, outer.height);
+  drawPortraitContained(outerContext, first, 0, 0, outer.width, outer.height);
   return { inner, outer };
 }
 

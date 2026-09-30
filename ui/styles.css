@@ -267,3 +267,49 @@ button:not(.swatch):focus-visible,input:focus-visible{outline-color:#000!importa
 .color-play-button.is-playing::after{content:"";position:absolute;inset:-4px;border:1px solid transparent;border-top-color:#111;border-right-color:#111;border-radius:50%;pointer-events:none;animation:color-play-spin var(--cycle-duration,800ms) linear infinite}
 @keyframes color-play-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.color-play-button,.color-play-button.is-playing::after{animation:none;transition:none}}
+
+/* The editor stays centered for both folded and expanded control groups. */
+@media(min-width:761px){
+  .editor-wrap,.editor-wrap.is-expanded{top:122px;bottom:62px;align-items:center;padding:0;box-sizing:border-box}
+  .editor,.editor-wrap.is-expanded .editor{max-height:calc(100dvh - 218px)}
+}
+
+/* Back text is opt-in, so the compact panel remains useful on first load. */
+.back-text-section{border-bottom:1px solid #111}
+.back-text-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:0;border:0!important;text-align:left;font-size:14px;font-weight:600}
+.back-text-toggle>span:last-child{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:400}
+.back-text-content{padding-top:14px}
+.back-text-help{margin:0 0 13px;font-size:13px;line-height:1.45}
+.back-text-field,.back-text-options label{display:flex;flex-direction:column;gap:7px;font-size:13px;line-height:1.4}
+.back-text-field textarea,.back-text-field select,.back-text-options select,.back-text-options input{width:100%;min-height:38px;padding:8px 10px;font-size:14px;font-family:inherit;color:#000;background:#fff;border:1px solid #111;border-radius:7px}
+.back-text-field textarea{min-height:70px;max-height:150px;resize:vertical;line-height:1.5}
+.back-text-preset{margin-top:12px}
+.back-text-options{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:10px;margin-top:12px}
+.back-text-options input[type=color]{padding:5px;cursor:pointer}
+.back-text-section .range-row{margin-top:14px}
+.back-text-section .range-row>span{font-size:13px}
+.back-text-section .range-row output{font-size:12px}
+.back-text-section .range-row input{height:5px}
+.editor .section-label{font-size:14px}
+.editor .section-hint,.editor .text-button,.editor .color-value,.editor .color-value code{font-size:13px}
+.editor .photo-actions p,.editor .photo-status,.editor .palette-note,.editor .series-meta,.editor .editor-footer p{font-size:12px}
+.editor .mode-title{font-size:12px}
+.editor .range-row>span,.editor .family-tabs button,.editor .series-tab{font-size:13px}
+.editor .range-row output{font-size:12px}
+.editor .series-tab>small{font-size:12px}
+.editor-scroll{scrollbar-gutter:stable}
+@media(max-width:760px){
+  .editor-wrap,.editor-wrap.is-expanded{transform:none;margin:0 auto 10vh;min-height:calc(100dvh - 32px);padding:16px 0;box-sizing:border-box}
+  .editor .mode-title{font-size:12px}
+  .back-text-options{grid-template-columns:minmax(0,1fr) 86px}
+}
+
+/* Locally hosted type choices inspired by CellMotion's icon burst editor. */
+@font-face{font-family:'Cinzel';src:url('../assets/fonts/Cinzel-Variable.ttf') format('truetype');font-weight:400 900;font-display:swap}
+@font-face{font-family:'Fraunces';src:url('../assets/fonts/Fraunces-Variable.ttf') format('truetype');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Instrument Serif';src:url('../assets/fonts/InstrumentSerif-Regular.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'League Spartan';src:url('../assets/fonts/LeagueSpartan-Variable.ttf') format('truetype');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Lora';src:url('../assets/fonts/Lora-Variable.ttf') format('truetype');font-weight:400 700;font-display:swap}
+@font-face{font-family:'Manrope';src:url('../assets/fonts/Manrope-Variable.ttf') format('truetype');font-weight:200 800;font-display:swap}
+@font-face{font-family:'Martian Mono';src:url('../assets/fonts/MartianMono-Variable.ttf') format('truetype');font-weight:100 800;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url('../assets/fonts/SpaceGrotesk-Variable.ttf') format('truetype');font-weight:300 700;font-display:swap}
