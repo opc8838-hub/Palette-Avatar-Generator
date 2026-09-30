@@ -1,6 +1,6 @@
-/** Avatar editor state and UI; device motion stays inside the independent viewer. */
+/** Avatar editor state, draggable panel, and UI; device motion stays inside the independent viewer. */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowUpRight, Check, Download, ImagePlus, RotateCcw, X, LoaderCircle, Play, Pause } from 'lucide-react';
+import { ArrowUpRight, Check, Download, Grip, ImagePlus, RotateCcw, X, LoaderCircle, Play, Pause } from 'lucide-react';
 import { useViewer } from './lib/use-viewer';
 import palette from './palette.json';
 import { BACK_TEXT_FONTS, loadDefaultPortrait, loadPortrait, prepareAvatarLayers, renderPreparedAvatar, renderPortraitScreens, downloadAvatar } from '../app/avatar-engine.js';
@@ -58,6 +58,7 @@ export function App({ viewer }) {
   const [textLayer, setTextLayer] = useState({ text: '', font: 'display', size: 128, x: 0, y: 0, color: '#111111' });
   const [fontRevision, setFontRevision] = useState(0);
   const input = useRef(null), request = useRef(0);
+  const editorRef = useRef(null), editorOffset = useRef({ x: 0, y: 0 }), activeEditorDrag = useRef(null);
   const selected = allColors.find((card) => card.hex === color);
   const activeSeries = palette.series.find((series) => series.id === seriesId) || palette.series[0];
   const activeFamily = activeSeries.family;
@@ -110,6 +111,51 @@ export function App({ viewer }) {
     try { await downloadAvatar(activeSource.canvas, options); setToast('头像已准备好，请查看浏览器下载。'); }
     catch (e) { setError(e.message); } finally { setExporting(false); }
   }
+  function moveEditorTo(x, y) {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const bounds = editor.getBoundingClientRect();
+    const baseLeft = bounds.left - editorOffset.current.x;
+    const baseTop = bounds.top - editorOffset.current.y;
+    const horizontalSpace = window.innerWidth - 24;
+    const verticalSpace = window.innerHeight - 24;
+    const minX = 12 - baseLeft;
+    const maxX = bounds.width <= horizontalSpace ? window.innerWidth - 12 - baseLeft - bounds.width : window.innerWidth - 48 - baseLeft;
+    const minY = 12 - baseTop;
+    const maxY = bounds.height <= verticalSpace ? window.innerHeight - 12 - baseTop - bounds.height : window.innerHeight - 48 - baseTop;
+    const nextX = Math.min(Math.max(x, minX), Math.max(minX, maxX));
+    const nextY = Math.min(Math.max(y, minY), Math.max(minY, maxY));
+    setEditorOffset(nextX, nextY);
+  }
+  function setEditorOffset(x, y) {
+    editorOffset.current = { x, y };
+    editorRef.current?.style.setProperty('--editor-drag-x', `${x}px`);
+    editorRef.current?.style.setProperty('--editor-drag-y', `${y}px`);
+  }
+  function startEditorDrag(event) {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    activeEditorDrag.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, offsetX: editorOffset.current.x, offsetY: editorOffset.current.y };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    editorRef.current?.classList.add('is-moving');
+  }
+  function onEditorDrag(event) {
+    const drag = activeEditorDrag.current;
+    if (drag?.pointerId !== event.pointerId) return;
+    moveEditorTo(drag.offsetX + event.clientX - drag.x, drag.offsetY + event.clientY - drag.y);
+  }
+  function endEditorDrag(event) {
+    if (activeEditorDrag.current?.pointerId !== event.pointerId) return;
+    activeEditorDrag.current = null;
+    editorRef.current?.classList.remove('is-moving');
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  }
+  function onEditorDragKey(event) {
+    const delta = event.shiftKey ? 40 : 12;
+    const movement = { ArrowLeft: [-delta, 0], ArrowRight: [delta, 0], ArrowUp: [0, -delta], ArrowDown: [0, delta] }[event.key];
+    if (movement) { event.preventDefault(); moveEditorTo(editorOffset.current.x + movement[0], editorOffset.current.y + movement[1]); }
+    else if (event.key === 'Home') { event.preventDefault(); setEditorOffset(0, 0); }
+  }
   return <>
     <header className="studio-header"><a className="wordmark" href="#" onClick={(e) => { e.preventDefault(); setStep(0); }} aria-label="Tone Duo 首页">tone<span className="brand-slash">/</span>duo<i /></a><button className="header-save" onClick={() => setStep(3)}>我的头像 <ArrowUpRight size={16} /></button></header>
     <section className="stage-copy" aria-live="polite" key={step}><p className="eyebrow"><i /> A PORTRAIT, TWO EXPRESSIONS</p><h1>{steps[step].title[0]}<br />{steps[step].title[1]}</h1><p className="stage-description">{steps[step].copy}</p></section>
@@ -117,8 +163,8 @@ export function App({ viewer }) {
     {viewerError && <div className="flat-fallback"><Preview image={images?.[mode]} label="平面头像预览" /><p>设备预览暂不可用，仍可编辑和下载头像。</p></div>}
     <div className="stage-bottom"><DeviceFoldControl viewer={viewer} /><nav className="steps" aria-label="头像制作步骤">{steps.map((s, i) => <button key={s.name} aria-current={step === i ? 'step' : undefined} className={step === i ? 'active' : ''} onClick={() => setStep(i)}>{s.name}{step === i && <i />}</button>)}</nav></div>
     <div className={`editor-wrap ${showCrop || showText ? 'is-expanded' : ''}`}>
-    <aside className={`editor ${dragging ? 'dragging' : ''}`} aria-label="头像编辑器" onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDragging(false); }} onDrop={(e) => { e.preventDefault(); setDragging(false); upload(e.dataTransfer.files[0]); }}>
-      <div className="editor-top"><span>你的头像工作室</span><span className="edition">NO. 001</span></div>
+    <aside ref={editorRef} className={`editor ${dragging ? 'dragging' : ''}`} aria-label="头像编辑器" onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDragging(false); }} onDrop={(e) => { e.preventDefault(); setDragging(false); upload(e.dataTransfer.files[0]); }}>
+      <div className="editor-top editor-drag-handle" role="button" tabIndex={0} aria-label="拖动头像编辑器；双击恢复居中" title="拖动面板，双击恢复居中" onPointerDown={startEditorDrag} onPointerMove={onEditorDrag} onPointerUp={endEditorDrag} onPointerCancel={endEditorDrag} onLostPointerCapture={() => { activeEditorDrag.current = null; editorRef.current?.classList.remove('is-moving'); }} onDoubleClick={() => setEditorOffset(0, 0)} onKeyDown={onEditorDragKey}><span>你的头像工作室</span><span className="edition editor-drag-hint"><Grip size={14} aria-hidden="true" /> 拖动 <span>NO. 001</span></span></div>
       <div className="editor-scroll">
         <section><div className="section-heading"><span className="section-label">照片</span><button className="text-button" onClick={() => setShowCrop((v) => !v)} aria-expanded={showCrop}>{showCrop ? '收起调整' : '调整构图'} <ArrowUpRight size={12} /></button></div>
           <div className="photo-row"><div className="portrait-frame"><Preview image={images?.[mode]} label="当前头像预览" />{busy && <div className="portrait-busy"><LoaderCircle size={22} className="spin" /></div>}</div><div className="photo-actions"><button className="upload-button" onClick={() => input.current.click()} disabled={Boolean(busy)}><ImagePlus size={15} /> 上传你的照片</button><p>也可拖入一张照片<br />JPG / PNG / WebP · 25 MB 内</p></div></div>

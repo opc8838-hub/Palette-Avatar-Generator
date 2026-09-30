@@ -313,3 +313,12 @@ button:not(.swatch):focus-visible,input:focus-visible{outline-color:#000!importa
 @font-face{font-family:'Manrope';src:url('../assets/fonts/Manrope-Variable.ttf') format('truetype');font-weight:200 800;font-display:swap}
 @font-face{font-family:'Martian Mono';src:url('../assets/fonts/MartianMono-Variable.ttf') format('truetype');font-weight:100 800;font-display:swap}
 @font-face{font-family:'Space Grotesk';src:url('../assets/fonts/SpaceGrotesk-Variable.ttf') format('truetype');font-weight:300 700;font-display:swap}
+
+/* Drag only the editor title bar; the rest of the controls keep their gestures. */
+.editor-wrap{z-index:5}
+.editor{transform:translate3d(var(--editor-drag-x,0px),var(--editor-drag-y,0px),0)}
+.editor-drag-handle{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.editor.is-moving .editor-drag-handle{cursor:grabbing}
+.editor-drag-handle:focus-visible{outline:2px solid #111;outline-offset:-4px}
+.editor-drag-hint{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.editor-drag-hint>span{margin-left:8px}
