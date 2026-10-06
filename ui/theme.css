@@ -1,0 +1,68 @@
+/* Studio lighting tokens. Artwork colors are independent of interface lighting. */
+:root{
+  --studio-bg:#fff;--studio-surface:#fff;--studio-ink:#000;--studio-muted:#626269;
+  --studio-line:#111;--studio-divider:#dedee1;--studio-hover:#f5f5f5;--studio-soft:#eee;
+  --studio-active:#f0fae9;--studio-active-line:#8fa57e;--studio-active-ring:#d7eecb;--studio-glow:#beddaa80;
+  --studio-mark-invert:0;--studio-busy:#ffffffcc;--studio-wash:#00000006;
+  --studio-scrollbar:#d1d1d6;--studio-scrollbar-hover:#aaaab2;
+  --paper:var(--studio-bg);--line:var(--studio-line);
+  background:var(--studio-bg);color:var(--studio-ink);color-scheme:light;
+}
+:root[data-theme=dark]{
+  --studio-bg:#000;--studio-surface:#111;--studio-ink:#fff;--studio-muted:#b2b2bb;
+  --studio-line:#777780;--studio-divider:#38383f;--studio-hover:#252528;--studio-soft:#2a2a30;
+  --studio-active:#253522;--studio-active-line:#91b47e;--studio-active-ring:#526c44;--studio-glow:#83bd7050;
+  --studio-mark-invert:1;--studio-busy:#111111cc;--studio-wash:#ffffff0d;color-scheme:dark;
+  --studio-scrollbar:#4a4a52;--studio-scrollbar-hover:#777780;
+}
+html,body,#stage{background:var(--studio-bg);color:var(--studio-ink)}
+#stage :where(:not(.social-phone,.social-phone *)),#stage :where(:not(.social-phone,.social-phone *))::before,#stage :where(:not(.social-phone,.social-phone *))::after{color:var(--studio-ink)!important}
+#stage #webgl{background:transparent}
+#stage :is(.editor,.editor-top,.editor-footer,.steps,.device-control,.toast,.error-message,.crop-controls,.motion-transport){background:var(--studio-surface);border-color:var(--studio-line)!important}
+#stage :is(.editor section,.editor-top){border-color:var(--studio-divider)!important}
+#stage .studio-header{border-color:var(--studio-line)}
+#stage button:not(.swatch){background:var(--studio-surface)!important;color:var(--studio-ink)!important;border-color:var(--studio-line)!important}
+#stage button:not(.swatch):hover{background:var(--studio-hover)!important}
+#stage :is(.steps button.active,.steps button.active:hover,.mode-card.selected,.editor .series-tab.active,.motion-choice-group button[aria-pressed=true],.motion-transport button.is-playing,.motion-transport button[aria-pressed=true]){background:var(--studio-active)!important;border-color:var(--studio-active-line)!important;box-shadow:inset 0 0 0 1px var(--studio-active-ring),0 0 10px var(--studio-glow)}
+#stage :is(textarea,select,input[type=color]){background:var(--studio-surface);color:var(--studio-ink)!important;border-color:var(--studio-line)}
+#stage input[type=range]{accent-color:var(--studio-ink)}
+#stage :is(button,a,input,select,textarea,canvas):focus-visible{outline-color:var(--studio-ink)!important}
+#stage textarea::placeholder{color:var(--studio-muted)!important;opacity:1}
+#stage .editor-scroll{scrollbar-width:thin;scrollbar-color:var(--studio-scrollbar) transparent}
+@supports selector(::-webkit-scrollbar){
+  #stage .editor-scroll{scrollbar-width:auto;scrollbar-color:auto}
+  #stage .editor-scroll::-webkit-scrollbar{width:4px}
+  #stage .editor-scroll::-webkit-scrollbar-track{background:transparent}
+  #stage .editor-scroll::-webkit-scrollbar-thumb{background:var(--studio-scrollbar);border-radius:999px}
+  #stage .editor-scroll::-webkit-scrollbar-thumb:hover{background:var(--studio-scrollbar-hover)}
+  #stage .editor-scroll::-webkit-scrollbar-button{display:none;width:0;height:0}
+}
+#stage :is(.wordmark>i,.eyebrow i,.palette-note i,.editor-footer p i,.reference-mark,.steps button.active>i){background:var(--studio-ink)}
+#stage .swatch.selected{box-shadow:0 0 0 2px var(--studio-surface),0 0 0 3px var(--studio-ink)}
+#stage :is(.swatch svg,.swatch svg *,.swatch-step){color:var(--swatch-ink)!important}
+#stage .portrait-busy{background:var(--studio-busy)}
+#stage .motion-grid-badge{border-color:var(--studio-divider)}
+#stage .motion-switch{background:var(--studio-soft)!important}
+#stage .motion-switch i{background:var(--studio-ink)}
+#stage .motion-switch[aria-checked=true]{background:var(--studio-ink)!important}
+#stage .motion-switch[aria-checked=true] i{background:var(--studio-surface)}
+
+/* Phone screens keep the original platform appearance in either studio theme. */
+#stage :is(.portrait-family-options,.illustration-subjects) button[aria-pressed=true]{background:var(--studio-active)!important;border-color:var(--studio-active-line)!important;box-shadow:inset 0 0 0 1px var(--studio-active-ring)}
+#stage .illustration-controls .mode-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+#stage .illustration-swatch{background:var(--swatch)!important;border-color:var(--studio-surface)!important}
+#stage :is(.portrait-family-options button,.illustration-subjects button){border:1px solid var(--studio-line)}
+.social-phone{color-scheme:light}
+:root[data-theme=dark] #stage .social-phone{box-shadow:0 0 0 1px #ffffff55,0 12px 26px #00000012,0 2px 4px #0000000c}
+
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:39px;padding:0 12px;border:1px solid var(--studio-line);border-radius:999px;font-size:12px;white-space:nowrap}
+.theme-toggle-icon{display:grid;place-items:center}
+html[data-theme-transition=true] .theme-toggle-icon{animation:lamp-icon-breathe 1s ease-in-out both}
+html[data-theme-transition=true],html[data-theme-transition=true] body,html[data-theme-transition=true] #stage,html[data-theme-transition=true] #stage :where(:not(.social-phone,.social-phone *)){
+  transition:background-color 1s cubic-bezier(.4,0,.2,1),color 1s cubic-bezier(.4,0,.2,1),border-color 1s cubic-bezier(.4,0,.2,1),opacity .28s ease,filter .28s ease;
+}
+@keyframes lamp-icon-breathe{0%{opacity:.45;transform:scale(.85)}45%{opacity:1;transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+@media(max-width:760px){.theme-toggle{width:34px;height:34px;padding:0;flex-shrink:0}.theme-toggle-label{display:none}.studio-header{gap:12px}}
+@media(max-width:420px){.wordmark{font-size:26px}.studio-header{gap:10px}.header-actions .header-save{white-space:nowrap;font-size:10px;padding:8px;gap:5px}}
+@media(max-width:380px){.studio-header{left:16px;right:16px}.wordmark{font-size:26px}.header-actions{gap:5px}.header-actions .header-save{font-size:10px;padding:8px}.language-switch{min-width:52px}}
+@media(prefers-reduced-motion:reduce){.theme-toggle-icon{animation:none!important}}

@@ -1,0 +1,14 @@
+{
+  "scope": "Manual regions for these two accepted examples, not a detector for arbitrary uploads.",
+  "locked": ["hair", "face", "skin", "beard", "ink"],
+  "subjects": {
+    "male": {"parts": [{"id": "background", "label": "背景", "kind": "background", "seeds": [[0,0], [1253,0], [0,1253], [1253,1253]]}]},
+    "woman": {"parts": [
+      {"id": "background", "label": "背景", "kind": "background", "seeds": [[0,0], [1253,0], [0,800], [1253,800]]},
+      {"id": "clothing", "label": "衣服", "kind": "paths", "preserveDarkerThan": 185, "paths": [
+        "M858 1030 Q876 1042 895 1050 L939 1072 Q946 1155 952 1254 L781 1254 Q827 1159 841 1100 Q853 1058 858 1030 Z",
+        "M445 1054 Q466 1024 482 1001 Q481 1032 465 1074 Q442 1141 437 1191 Q430 1220 430 1254 L400 1254 Q395 1185 409 1128 Q420 1085 445 1054 Z"
+      ]}
+    ]}
+  }
+}

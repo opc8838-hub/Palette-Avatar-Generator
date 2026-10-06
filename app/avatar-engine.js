@@ -1,4 +1,4 @@
-/** Browser-only photo decoding, matte generation and deterministic composition. */
+/** Browser-only photo decoding, matte generation, and color-consistent compositions. */
 import { recolorPixels } from './avatar-tone.js';
 
 export function canvas(width, height = width) {
@@ -103,7 +103,20 @@ export function prepareAvatarLayers(source, { zoom = 1, x = 0, y = 0, size = 102
   const previewSize = 240;
   const previewSource = canvas(previewSize), previewContext = previewSource.getContext('2d', { willReadFrequently: true });
   highQuality(previewContext).drawImage(original, 0, 0, previewSize, previewSize);
-  return { original, neutral, sourcePixels, previewPixels: previewContext.getImageData(0, 0, previewSize, previewSize), previewSize, size };
+  const screenSize = 768;
+  const screenSource = canvas(screenSize), screenContext = screenSource.getContext('2d', { willReadFrequently: true });
+  highQuality(screenContext).drawImage(original, 0, 0, screenSize, screenSize);
+  return { original, neutral, sourcePixels, previewPixels: previewContext.getImageData(0, 0, previewSize, previewSize), previewSize, screenPixels: screenContext.getImageData(0, 0, screenSize, screenSize), screenSize, size };
+}
+
+export function renderTintedPortrait(layers, color, strength = .32) {
+  const tinted = canvas(layers.screenSize);
+  tinted.getContext('2d').putImageData(
+    new ImageData(recolorPixels(layers.screenPixels.data, color, 'tint', strength), layers.screenSize, layers.screenSize),
+    0,
+    0,
+  );
+  return tinted;
 }
 
 export const BACK_TEXT_FONTS = [
@@ -129,10 +142,7 @@ export function drawBackText(ctx, size, textLayer = {}) {
   ctx.fillStyle = textLayer.color || '#111111';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  const requestedSize = Math.max(24, Math.min(320, Number(textLayer.size) || 128)) * size / 1024;
-  ctx.font = `${font.weight} ${requestedSize}px ${font.family}`;
-  const widest = Math.max(1, ...lines.map((line) => ctx.measureText(line).width));
-  const actualSize = requestedSize * Math.min(1, size * .9 / widest);
+  const actualSize = Math.max(24, Math.min(640, Number(textLayer.size) || 128)) * size / 1024;
   ctx.font = `${font.weight} ${actualSize}px ${font.family}`;
   const centerX = size * (.5 + (Number(textLayer.x) || 0));
   const centerY = size * (.5 + (Number(textLayer.y) || 0));
@@ -224,6 +234,6 @@ export async function downloadAvatar(source, options) {
   const output = renderAvatar(source, { ...options, size: 1024 });
   const blob = await new Promise((resolve, reject) => output.toBlob((b) => b ? resolve(b) : reject(Error('图片导出失败，请重试。')), 'image/png'));
   const url = URL.createObjectURL(blob), a = document.createElement('a');
-  a.href = url; a.download = `tone-duo-${options.color.slice(1)}-${options.mode}-square.png`;
+  a.href = url; a.download = `tone-duo-${options.style || options.mode}-${options.color.slice(1)}-square.png`;
   a.click(); setTimeout(() => URL.revokeObjectURL(url), 30000);
 }

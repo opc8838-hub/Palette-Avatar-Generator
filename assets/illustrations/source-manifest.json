@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "rules_confirmed": true,
+  "approved_scope": "User accepted the two-example Line / Solid preview on 2026-10-04. Color extension pending user review.",
+  "color_materials": "color-materials.json",
+  "color_palette": "palette.json",
+  "color_status": "two_example_preview_pending_user_review",
+  "assets": {
+    "male-line": {
+      "file": "assets/male-line.png",
+      "bytes": 1303140,
+      "sha256": "0d4ef2a429bb65a3ea6900991be9ec33adfb08d80993e2e1c422886316e6885e"
+    },
+    "male-solid": {
+      "file": "assets/male-solid.png",
+      "bytes": 1305178,
+      "sha256": "74888ef635ce9ca585719fe4b58e49757bd65533aabfaaaf13f6261c8ddadc0f"
+    },
+    "woman-line": {
+      "file": "assets/woman-line.png",
+      "bytes": 1399119,
+      "sha256": "8030d52fcc2c839583d7060d767a6a284b383833ea435917f8478c9bad2c6f49"
+    },
+    "woman-solid": {
+      "file": "assets/woman-solid.png",
+      "bytes": 1385276,
+      "sha256": "f0b21edb97b282fa67d24ce7902ce74f91827dddeb76e5bafa6a286932f5a727"
+    }
+  },
+  "generation_records": "generation-records.json",
+  "layers": "layers.json",
+  "preview": "http://127.0.0.1:4175/",
+  "automatic_new_uploads": false,
+  "training_performed": false
+}

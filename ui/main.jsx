@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client';
 import { createViewer } from '../main.js';
 import { App } from './App.jsx';
 import './styles.css';
+import './theme.css';
 
 let viewer;
 try { viewer = createViewer(document.querySelector('#webgl')); }

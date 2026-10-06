@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 Three.js、EXRLoader、render-quality 像素预算、全屏 canvas 与 apple-product-viewer 环境贴图。
- * [OUTPUT]: 提供主场景/教学场景、相机、渲染器、独立背景色、自适应超采样、双层 PMREM 环境和绘制接口。
+ * [OUTPUT]: 提供主场景/教学场景、相机、透明清屏渲染器、自适应超采样、双层 PMREM 环境和绘制接口。
  * [POS]: app 的 WebGL 运行时边界；集中拥有画布质量与源场景光照基线，避免场景编排直接操作底层 renderer。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -15,13 +15,14 @@ export function createRenderRuntime(canvas) {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
-    alpha: false,
+    // Composite the device over the page's single animated background.
+    alpha: true,
     powerPreference: 'high-performance',
   });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1;
-  renderer.setClearColor(0xffffff, 1);
+  renderer.setClearColor(0x000000, 0);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(50, 1, .01, 100);
@@ -94,7 +95,8 @@ export function createRenderRuntime(canvas) {
     return { finish, optics };
   }
 
-  // 背景只影响画布清屏；环境光与透明 PNG 的独立离屏目标保持不变。
-  const setBackground = (color) => renderer.setClearColor(color, 1);
+  // The DOM owns studio lighting; keep canvas clear pixels transparent.
+  // Preserve the viewer command for other callers without adding an opaque layer.
+  const setBackground = (color) => renderer.setClearColor(color, 0);
   return { renderer, scene, camera, pipelineMaterial, resize, setPipelineTexture, render, loadMaterialEnvironments, setBackground };
 }
