@@ -231,9 +231,10 @@ export function renderScreens(tinted, neutral, { color, mode, compare, original 
 }
 
 export async function downloadAvatar(source, options) {
-  const output = renderAvatar(source, { ...options, size: 1024 });
+  const size = [256, 512, 1024].includes(options.size) ? options.size : 1024;
+  const output = renderAvatar(source, { ...options, size });
   const blob = await new Promise((resolve, reject) => output.toBlob((b) => b ? resolve(b) : reject(Error('图片导出失败，请重试。')), 'image/png'));
   const url = URL.createObjectURL(blob), a = document.createElement('a');
-  a.href = url; a.download = `tone-duo-${options.style || options.mode}-${options.color.slice(1)}-square.png`;
+  a.href = url; a.download = `tone-duo-${options.style || options.mode}-${options.color.slice(1)}-${size}.png`;
   a.click(); setTimeout(() => URL.revokeObjectURL(url), 30000);
 }

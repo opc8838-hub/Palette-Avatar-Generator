@@ -22,3 +22,7 @@ avatar-motion.js: 确定性配色、格子蒙版、十二种连续循环动效�
 avatar-tone.js: 纯函数灰阶与保亮度染色，可运行 Node 测试。
 avatar-engine.js: 本地照片分割、默认人物加载、背后文字与头像/设备画布合成、PNG 下载；文字支持 24–640px，按实际字号绘制，超出画布自然裁切；设备的染色人像使用与头像导出相同的像素算法。
 mockup-controller.js: 增加 setCanvas 直接更新内外屏；main.js 暴露 setScreenCanvas，折叠稳定后缓存静态画面。
+
+avatar-package.js: 浏览器生成无压缩 ZIP，九张 PNG + 配色 JSON + 说明；CRC32、中央目录和文件下载。
+draft-store.js: IndexedDB 显式保存一份草稿，含本机处理后的照片与设置；不做云上传，不作为自动存档。
+avatar-engine.js: 单图导出可选 256/512/1024 像素。
