@@ -6,7 +6,7 @@ export const ILLUSTRATION_STYLES = ['line', 'solid', 'color'];
 export const ILLUSTRATION_SUBJECTS = ['male', 'woman'];
 const SIZE = 1254;
 function canvas() { const out = document.createElement('canvas'); out.width = out.height = SIZE; return out; }
-function exterior(data, threshold) {
+function exterior(data, threshold, seeds) {
   const seen = new Uint8Array(SIZE * SIZE), queue = new Int32Array(SIZE * SIZE);
   let head = 0, tail = 0;
   const visit = (i) => {
@@ -16,8 +16,8 @@ function exterior(data, threshold) {
     if (Math.min(data[o], data[o + 1], data[o + 2]) < threshold) return;
     queue[tail++] = i;
   };
-  // Start from all edges; closed person contours protect skin and white clothes.
-  for (let i = 0; i < SIZE; i++) { visit(i); visit((SIZE - 1) * SIZE + i); visit(i * SIZE); visit(i * SIZE + SIZE - 1); }
+  // Only calibrated exterior seeds: bottom edges can contain white skin/clothes.
+  for (const [x, y] of seeds) visit(y * SIZE + x);
   while (head < tail) { const i = queue[head++], x = i % SIZE; visit(i - SIZE); visit(i + SIZE); if (x) visit(i - 1); if (x < SIZE - 1) visit(i + 1); }
   return queue.subarray(0, tail);
 }
@@ -28,7 +28,8 @@ async function loadAsset(subject, version) {
   ctx.fillStyle = 'white'; ctx.fillRect(0, 0, SIZE, SIZE); ctx.drawImage(image, 0, 0, SIZE, SIZE);
   const frame = ctx.getImageData(0, 0, SIZE, SIZE);
   // Light gray is actual Line artwork, so only near-white pixels are eligible.
-  for (const i of exterior(frame.data, version === 'line' ? 248 : 185)) frame.data[i * 4 + 3] = 0;
+  const seeds = regions.subjects[subject].parts.find(part => part.kind === 'background').seeds;
+  for (const i of exterior(frame.data, version === 'line' ? 248 : 185, seeds)) frame.data[i * 4 + 3] = 0;
   ctx.putImageData(frame, 0, 0);
   return out;
 }
