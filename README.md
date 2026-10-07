@@ -45,3 +45,11 @@ npm run build
 React 负责编辑器，Three.js 负责折叠设备预览。`app/avatar-engine.js` 在本机分离人物、合成头像并导出 PNG；`app/motion-controller.js` 独立处理手机动作。设备模型和材质基于 [iPhone Duo motion study](https://github.com/bravohenry/iphone-duo-motion-study) 改造。
 
 文字编辑的字体选择参考了 [CellMotion 图标爆发](https://github.com/opc8838-hub/font-animation/tree/main/site)；所用字体及其 OFL 许可文件一起保存在 `assets/fonts/`。
+
+## 收藏配色与交付
+
+- 同一头像可反复调色、下载当前 PNG，或下载当前配色的三版九图 ZIP。
+- 点击「收藏当前配色」：每个人像最多 5 套，保存背景、服饰、妆色、构图与文字；同时更新最新本机草稿。重复配色不占新位置。
+- 「保存头像」中可以命名、恢复、删除收藏，勾选要下载的配色，只打包选中的收藏。每套含三版各 1024 / 512 / 256 px，共 9 张 PNG。
+- 收藏仅存在当前浏览器；清除网站数据会删除收藏与草稿。上传照片的收藏通过恢复最新草稿重新关联，当前只保留最近一份照片草稿。
+- 当前免费，不限制同一头像反复下载；未开放购买或自动生成手绘。

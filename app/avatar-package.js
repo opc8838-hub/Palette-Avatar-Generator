@@ -47,3 +47,23 @@ export async function exportAvatarPackage(versions, settings) {
   entries.push({ name: 'README.txt', data: `Tone Duo — Avatar set\n\n${versions.map(v => v.name).join(' / ')}\nEach version: 1024, 512 and 256 px, square PNG.\n\nUse the square image as your profile avatar. Social platforms may crop it into a circle.\nPalette settings are included for reference. They are not a restorable project file.\n${settings.portraitFamily === 'illustration' ? 'This set uses a demonstration portrait, not a conversion of an uploaded photo.' : 'This set was composed locally from your photo.'}\n` });
   downloadBlob(createZip(entries), `tone-duo-${settings.portraitFamily}-set.zip`);
 }
+export async function exportSavedLooks(looks, renderVersions) {
+  if (!looks.length) throw Error('请先选择要打包的收藏配色。');
+  const entries = [], manifest = [];
+  for (let i = 0; i < looks.length; i++) {
+    const look = looks[i], prefix = `look-${String(i + 1).padStart(2, '0')}`;
+    const files = [];
+    for (const { name, canvas } of await renderVersions(look.settings)) {
+      for (const size of [1024, 512, 256]) {
+        const output = document.createElement('canvas'); output.width = output.height = size;
+        const ctx = output.getContext('2d'); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(canvas, 0, 0, size, size);
+        const filename = `${prefix}-${name}-${size}.png`;
+        entries.push({ name: filename, data: new Uint8Array(await (await canvasBlob(output)).arrayBuffer()) }); files.push(filename);
+      }
+    }
+    manifest.push({ id: look.id, name: look.name || prefix, settings: look.settings, files });
+  }
+  entries.push({ name: 'palette.json', data: JSON.stringify({ product: 'Tone Duo', version: 2, looks: manifest }, null, 2) });
+  entries.push({ name: 'README.txt', data: `Tone Duo — Saved looks\n\n${looks.length} selected color combinations.\nEach look includes three versions at 1024, 512 and 256 px (9 PNGs).\nThe file mapping and color settings are listed in palette.json. Settings are for reference, not a portable editable project.\nKeep editing and download other colors from the studio. Your saved looks are stored in that browser; clearing site data removes them.\n${looks[0].settings.portraitFamily === 'illustration' ? 'These portraits are editable demonstration samples, not photo-to-illustration results.' : 'These avatars were composed locally from your photo.'}\n` });
+  downloadBlob(createZip(entries), 'tone-duo-saved-looks.zip');
+}

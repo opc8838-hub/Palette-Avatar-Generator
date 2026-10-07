@@ -40,3 +40,8 @@ The pre-existing shared scene/materials and alpha-cropped PNG exporter are retai
 The initial Git-triggered deploy failed because all 495 lockfile tarball URLs pointed to bnpm.byted.org, which Vercel could not resolve. The URLs were normalized to registry.npmjs.org without changing package versions or integrity hashes, and a repository .npmrc now pins that public source.
 
 An isolated archive of the accepted commit, with only this registry correction, passed npm ci, the production build and all 6 tests. Concurrent camera-lens/prototype development in the working tree was excluded from the release.
+
+## 2026-10-07 配色收藏交付
+
+构建通过；Node 20 项回归通过，含收藏去重、快照与上限、勾选过滤、ZIP 文件内容/CRC/调用尺寸。SSR 组件验证：两套收藏只有一套勾选，零选择禁用 ZIP，英文交付完整。
+本轮自动审批拒绝本地浏览器访问（URL policy），无法进行真实页面点击、IndexedDB 刷新恢复、移动布局与 PNG 像素验收；不能将 SSR 和导出桩测试作为这些项的证明。证据脚本与输出位于 evidence/，不进入应用构建。

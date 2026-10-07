@@ -1,9 +1,11 @@
 /** Avatar editor, social previews, and draggable panel; device motion stays in the viewer. */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ProductHome } from './ProductHome.jsx';
+import { SavedLooks } from './SavedLooks.jsx';
+import { addSavedLook, lookSignature, selectedLooks } from '../app/saved-looks.js';
 import { DeliveryPanel } from './DeliveryPanel.jsx';
-import { canvasBlob, exportAvatarPackage } from '../app/avatar-package.js';
-import { readDraft, writeDraft, decodeDraftPhoto } from '../app/draft-store.js';
+import { canvasBlob, exportAvatarPackage, exportSavedLooks } from '../app/avatar-package.js';
+import { readDraft, writeDraft, decodeDraftPhoto, readLooks, writeLooks } from '../app/draft-store.js';
 import { ArrowUpRight, Check, Download, Grip, ImagePlus, RotateCcw, X, LoaderCircle, Play, Pause, Sparkles, Sun, Moon } from 'lucide-react';
 import { useViewer } from './lib/use-viewer';
 import { SocialPreview } from './SocialPreview.jsx';
@@ -62,6 +64,9 @@ export function App({ viewer }) {
   const [home, setHome] = useState(!initialIllustrationStyle && !initialView.get('view') && window.location.hash !== '#studio');
   const [draft, setDraft] = useState(null), [draftBusy, setDraftBusy] = useState(false);
   const [exportSize, setExportSize] = useState(1024);
+  const [photoId, setPhotoId] = useState('photo:default');
+  const [collection, setCollection] = useState({ key: null, items: [] });
+  const [lookBusy, setLookBusy] = useState(false), [selectedLookIds, setSelectedLookIds] = useState([]);
   useEffect(() => { readDraft().then(setDraft).catch(() => {}); }, []);
   useEffect(() => { const onBack = () => setHome(window.location.hash !== '#studio' && !new URLSearchParams(window.location.search).get('style') && !new URLSearchParams(window.location.search).get('view')); window.addEventListener('popstate', onBack); return () => window.removeEventListener('popstate', onBack); }, []);
   function showHome(value) { if (home !== value) window.history.pushState(null, '', window.location.pathname + (value ? '' : '#studio')); setHome(value); window.scrollTo(0, 0); }
@@ -85,6 +90,15 @@ export function App({ viewer }) {
   const [illustrationMaterials, setIllustrationMaterials] = useState({ male: {}, woman: {} });
   const [makeup, setMakeup] = useState({ blush: { on: true, color: '#e53935', strength: 20 }, lips: { on: true, color: '#e53935', strength: 35 } });
   const isIllustration = portraitFamily === 'illustration';
+  const portraitKey = isIllustration ? 'illustration:' + illustrationSubject : photoId;
+  const portraitKeyRef = useRef(portraitKey); portraitKeyRef.current = portraitKey;
+  const looksReady = collection.key === portraitKey && !collection.error;
+  const looks = looksReady ? collection.items : [];
+  useEffect(() => {
+    let active = true;
+    readLooks(portraitKey).then(items => { if (active) { setCollection({ key: portraitKey, items }); setSelectedLookIds(items.map(item => item.id)); } }).catch(() => { if (active) { setCollection({ key: portraitKey, items: [], error: true }); setSelectedLookIds([]); setError('本机收藏暂不可用，你仍可下载当前配色。'); } });
+    return () => { active = false; };
+  }, [portraitKey]);
   const effectiveMode = isIllustration ? 'original' : mode;
   const effectiveColor = isIllustration && illustrationStyle !== 'color' ? '#FFFFFF' : color;
   const [busy, setBusy] = useState('准备默认人物…');
@@ -153,7 +167,7 @@ export function App({ viewer }) {
   async function upload(file) {
     if (!file) return;
     const id = ++request.current; setBusy('正在读取照片…'); setError('');
-    try { const result = await loadPortrait(file, (message) => { if (id === request.current) setBusy(message); }); if (id === request.current) { setSource(result); setPortraitFamily('photo'); setColorPlaying(false); resetCrop(); setStep((current) => current === 4 ? 4 : 1); } }
+    try { const result = await loadPortrait(file, (message) => { if (id === request.current) setBusy(message); }); if (id === request.current) { setSource(result); setPhotoId('photo:' + crypto.randomUUID()); setPortraitFamily('photo'); setColorPlaying(false); resetCrop(); setStep((current) => current === 4 ? 4 : 1); } }
     catch (e) { if (id === request.current) setError(e.message || '处理失败，请换一张清晰的照片重试。'); }
     finally { if (id === request.current) setBusy(''); }
   }
@@ -203,10 +217,10 @@ export function App({ viewer }) {
     catch (e) { setError(e.message); } finally { setExporting(false); }
   }
   function snapshotSettings() {
-    return { portraitFamily, illustrationStyle, illustrationSubject, illustrationMaterials, makeup, color, mode, seriesId, strength, zoom, x, y, textLayer, motionSettings, exportSize };
+    return { photoId, portraitFamily, illustrationStyle, illustrationSubject, illustrationMaterials, makeup, color, mode, seriesId, strength, zoom, x, y, textLayer, motionSettings, exportSize };
   }
   async function saveDraft() {
-    if (!activeSource || activeBusy || draftBusy) return;
+    if (!activeSource || activeBusy || draftBusy || lookBusy) return;
     setDraftBusy(true); setError('');
     try {
       const settings = snapshotSettings();
@@ -216,6 +230,11 @@ export function App({ viewer }) {
       setToast('草稿已保存在当前浏览器。');
     } catch { setError('草稿未能保存，请检查浏览器存储空间。你仍可下载头像。'); }
     finally { setDraftBusy(false); }
+  }
+  function applySettings(s) {
+    setPortraitFamily(s.portraitFamily); setIllustrationStyle(s.illustrationStyle); setIllustrationSubject(s.illustrationSubject);
+    setIllustrationMaterials(s.illustrationMaterials); setMakeup(s.makeup); setColor(s.color); setMode(s.mode); setSeriesId(s.seriesId);
+    setStrength(s.strength); setZoom(s.zoom); setX(s.x); setY(s.y); setTextLayer(s.textLayer); setMotionSettings(s.motionSettings); setExportSize(s.exportSize || 1024);
   }
   async function restoreDraft() {
     if (!draft || draftBusy) return;
@@ -227,9 +246,7 @@ export function App({ viewer }) {
       const restored = s.portraitFamily === 'photo' ? await decodeDraftPhoto(saved.photo, saved.sourceName || '我的照片') : null;
       ++request.current; setBusy('');
       if (restored) setSource(restored);
-      setPortraitFamily(s.portraitFamily); setIllustrationStyle(s.illustrationStyle); setIllustrationSubject(s.illustrationSubject);
-      setIllustrationMaterials(s.illustrationMaterials); setMakeup(s.makeup); setColor(s.color); setMode(s.mode); setSeriesId(s.seriesId);
-      setStrength(s.strength); setZoom(s.zoom); setX(s.x); setY(s.y); setTextLayer(s.textLayer); setMotionSettings(s.motionSettings); setExportSize(s.exportSize || 1024);
+      applySettings(s); setPhotoId(s.photoId || 'photo:' + crypto.randomUUID());
       setColorPlaying(false); setStep(1); showHome(false); setToast('已恢复上次保存的人物与设置。');
     } catch (e) { setError(e.message || '草稿恢复失败，请重试。'); }
     finally { setDraftBusy(false); }
@@ -238,15 +255,73 @@ export function App({ viewer }) {
     if (!activeSource || activeBusy || exporting) return;
     setExporting(true); setError(''); setColorPlaying(false);
     try {
-      const variants = isIllustration ? ['line', 'solid', 'color'] : ['original', 'neutral', 'tint'];
-      const versions = variants.map(version => {
-        const item = isIllustration ? composeIllustration(illustrations, { subject: illustrationSubject, style: version, materials: illustrationMaterials[illustrationSubject], ...makeup }) : source;
-        const layers = prepareAvatarLayers(item.canvas, { zoom, x, y });
-        return { name: version, canvas: renderPreparedAvatar(layers, { color: isIllustration && version !== 'color' ? '#FFFFFF' : color, mode: isIllustration ? 'original' : version, strength, textLayer, size: 1024 }) };
-      });
+      const versions = renderSet(snapshotSettings());
       await exportAvatarPackage(versions, snapshotSettings()); setToast('头像套装已准备好，请查看浏览器下载。');
     } catch (e) { setError(e.message || '套装导出失败，请重试。'); }
     finally { setExporting(false); }
+  }
+  function renderSet(s) {
+    const illustrated = s.portraitFamily === 'illustration';
+    return (illustrated ? ['line', 'solid', 'color'] : ['original', 'neutral', 'tint']).map(version => {
+      const item = illustrated ? composeIllustration(illustrations, { subject: s.illustrationSubject, style: version, materials: s.illustrationMaterials[s.illustrationSubject], ...s.makeup }) : source;
+      const layers = prepareAvatarLayers(item.canvas, { zoom: s.zoom, x: s.x, y: s.y });
+      return { name: version, canvas: renderPreparedAvatar(layers, { color: illustrated && version !== 'color' ? '#FFFFFF' : s.color, mode: illustrated ? 'original' : version, strength: s.strength, textLayer: s.textLayer, size: 1024 }) };
+    });
+  }
+  async function saveLook() {
+    if (!activeSource || activeBusy || draftBusy || lookBusy || !looksReady) return;
+    setColorPlaying(false); setError(''); setLookBusy(true);
+    const key = portraitKey, settings = snapshotSettings();
+    try {
+      const items = addSavedLook(looks, { id: crypto.randomUUID(), settings, thumbnail: currentImage.toDataURL('image/png'), createdAt: Date.now() });
+      const photo = isIllustration ? null : await canvasBlob(source.canvas);
+      const saved = await writeDraft(settings, photo, await canvasBlob(currentImage), source?.name, { key, items });
+      setDraft(saved);
+      if (portraitKeyRef.current === key) { setCollection({ key, items }); setSelectedLookIds(ids => [...ids, items.at(-1).id]); }
+      setToast('配色已收藏，本机草稿已同步更新。');
+    } catch (e) { setError(e.message || '配色未能保存，请检查浏览器存储空间。'); }
+    finally { setLookBusy(false); }
+  }
+  async function updateLooks(items) {
+    if (lookBusy || !looksReady) return;
+    const key = portraitKey; setLookBusy(true); setError('');
+    try { await writeLooks(key, items); if (portraitKeyRef.current === key) { setCollection({ key, items }); setSelectedLookIds(ids => ids.filter(id => items.some(item => item.id === id))); } }
+    catch { setError('配色未能保存，请检查浏览器存储空间。'); }
+    finally { setLookBusy(false); }
+  }
+  function restoreLook(item) {
+    if (activeBusy || exporting || item.settings.portraitFamily !== portraitFamily) return;
+    applySettings(item.settings); setColorPlaying(false); setStep(1); setToast('已恢复收藏配色，可以继续编辑。');
+  }
+  async function downloadLook(item) {
+    if (activeBusy || exporting) return;
+    setExporting(true); setError('');
+    try {
+      const s = item.settings, illustrated = s.portraitFamily === 'illustration';
+      const font = BACK_TEXT_FONTS.find(f => f.id === s.textLayer.font);
+      if (s.textLayer.text && font) await document.fonts.load(font.weight + ' 128px ' + font.family.split(',')[0]);
+      const itemSource = illustrated ? composeIllustration(illustrations, { subject: s.illustrationSubject, style: s.illustrationStyle, materials: s.illustrationMaterials[s.illustrationSubject], ...s.makeup }) : source;
+      await downloadAvatar(itemSource.canvas, { ...s, color: illustrated && s.illustrationStyle !== 'color' ? '#FFFFFF' : s.color, mode: illustrated ? 'original' : s.mode, style: illustrated ? s.illustrationStyle : null, size: exportSize });
+      setToast('收藏配色已准备好，请查看浏览器下载。');
+    } catch (e) { setError(e.message || '收藏导出失败，请重试。'); }
+    finally { setExporting(false); }
+  }
+  async function downloadCollection() {
+    const chosen = selectedLooks(looks, selectedLookIds);
+    if (!activeSource || activeBusy || exporting || !chosen.length) return;
+    setExporting(true); setError(''); setColorPlaying(false);
+    try {
+      await exportSavedLooks(chosen, async s => {
+        const font = BACK_TEXT_FONTS.find(f => f.id === s.textLayer.font);
+        if (s.textLayer.text && font) await document.fonts.load(font.weight + ' 128px ' + font.family.split(',')[0]);
+        return renderSet(s);
+      });
+      setToast('收藏套装已准备好，请查看浏览器下载。');
+    } catch (e) { setError(e.message || '收藏导出失败，请重试。'); }
+    finally { setExporting(false); }
+  }
+  function savedLooksPanel(expanded = false) {
+    return <SavedLooks items={looks} selectedIds={selectedLookIds} onSelect={(id, on) => setSelectedLookIds(ids => on ? [...new Set([...ids, id])] : ids.filter(value => value !== id))} onSave={saveLook} onRestore={restoreLook} onDelete={id => updateLooks(looks.filter(item => item.id !== id))} onRename={(id, name) => updateLooks(looks.map(item => item.id === id ? { ...item, name } : item))} onDownload={downloadLook} busy={lookBusy || exporting || draftBusy || collection.key !== portraitKey} available={Boolean(activeSource) && !activeBusy && looksReady} t={t} expanded={expanded} currentSignature={lookSignature(snapshotSettings())} signatureOf={lookSignature} />;
   }
   function startSample(style = 'color') { setPortraitFamily('illustration'); setIllustrationSubject('woman'); setIllustrationStyle(style); setMakeup({ blush: { on: true, color: '#efcbac', strength: 45 }, lips: { on: true, color: '#e53935', strength: 46 } }); setColor('#C0D9F0'); setIllustrationMaterials(current => ({ ...current, woman: { clothing: '#F9D3AF' } })); setColorPlaying(false); resetCrop(); setStep(1); showHome(false); }
   useEffect(() => {
@@ -320,7 +395,7 @@ export function App({ viewer }) {
     <aside ref={editorRef} className={`editor ${dragging ? 'dragging' : ''}`} aria-label={t('头像编辑器')} onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDragging(false); }} onDrop={(e) => { e.preventDefault(); setDragging(false); upload(e.dataTransfer.files[0]); }}>
       <div className="editor-top editor-drag-handle" role="button" tabIndex={0} aria-label={t('拖动头像编辑器；双击恢复居中')} title={t('拖动面板，双击恢复居中')} onPointerDown={startEditorDrag} onPointerMove={onEditorDrag} onPointerUp={endEditorDrag} onPointerCancel={endEditorDrag} onLostPointerCapture={() => { activeEditorDrag.current = null; editorRef.current?.classList.remove('is-moving'); }} onDoubleClick={() => setEditorOffset(0, 0)} onKeyDown={onEditorDragKey}><span>{t('你的头像工作室')}</span><span className="edition editor-drag-hint"><Grip size={14} aria-hidden="true" /> {t('拖动')}</span></div>
       <div className="editor-scroll" id="editor-content" tabIndex={-1}>
-        {step === 3 ? <DeliveryPanel illustration={isIllustration} currentImage={currentImage} Preview={Preview} size={exportSize} onSize={setExportSize} onSave={save} onPackage={savePackage} onDraft={saveDraft} exporting={exporting} draftBusy={draftBusy} draftSavedAt={draft?.savedAt} available={Boolean(activeSource) && !activeBusy} t={t} /> : <>
+        {step === 3 ? <DeliveryPanel illustration={isIllustration} currentImage={currentImage} Preview={Preview} size={exportSize} onSize={setExportSize} onSave={save} onPackage={savePackage} onDraft={saveDraft} onEdit={() => setStep(1)} savedLooks={savedLooksPanel(true)} onCollection={downloadCollection} selectedCount={selectedLooks(looks, selectedLookIds).length} exporting={exporting} draftBusy={draftBusy} draftSavedAt={draft?.savedAt} available={Boolean(activeSource) && !activeBusy} t={t} /> : <>
         {step === 4 && <MotionControls settings={motionSettings} onSettings={setMotionSettings} onPlaying={setMotionPlaying} onEditing={setMotionEditing} controlsRef={motionControls} t={t} />}
         <section className="portrait-family-section"><div className="section-heading"><span className="section-label">{t('头像风格')}</span></div><div className="portrait-family-options" role="group" aria-label={t('头像风格')}><button type="button" aria-pressed={!isIllustration} onClick={() => { setPortraitFamily('photo'); setColorPlaying(false); resetCrop(); }}>{t('照片')}</button><button type="button" aria-pressed={isIllustration} onClick={() => { setPortraitFamily('illustration'); setColorPlaying(false); resetCrop(); }}>{t('简约手绘')}</button></div></section>
         <section><div className="section-heading"><span className="section-label">{t(isIllustration ? '手绘样例' : '照片')}</span><button className="text-button" onClick={() => setShowCrop((v) => !v)} aria-expanded={showCrop}>{t(showCrop ? '收起调整' : '调整构图')} <ArrowUpRight size={12} /></button></div>
@@ -357,11 +432,12 @@ export function App({ viewer }) {
           </div>
           <p className="palette-note"><i /> {palette.series.length}{t('个色系')} · {allColors.length}{t('款颜色')}</p>
         </section>}
+        {step !== 4 && savedLooksPanel()}
         </>}
         {error && <div className="error-message" role="alert"><span>{t(error)}</span><button aria-label={t('关闭提示')} onClick={() => setError('')}><X size={15} /></button></div>}
       </div>
       <div className="editor-footer">
-        {step !== 3 && <div className="studio-next-actions"><button onClick={saveDraft} disabled={!activeSource || activeBusy || draftBusy}>{t(draftBusy ? '正在保存草稿…' : '保存草稿')}</button><button onClick={() => setStep(step === 2 ? 3 : 2)}>{t(step === 2 ? '选好，去下载' : '查看社媒对比')} <ArrowUpRight size={12} /></button></div>}
+        {step !== 3 && <div className="studio-next-actions"><button onClick={step === 4 ? saveDraft : saveLook} disabled={!activeSource || activeBusy || draftBusy || lookBusy || !looksReady || (step !== 4 && looks.length >= 5)}>{t(step === 4 ? draftBusy ? '正在保存草稿…' : '保存草稿' : lookBusy ? '正在保存配色…' : '收藏当前配色')}</button><button onClick={() => setStep(step === 2 ? 3 : 2)}>{t(step === 2 ? '选好，去下载' : '查看社媒对比')} <ArrowUpRight size={12} /></button></div>}
         {step !== 3 && <button className="download-button" onClick={save} disabled={!activeSource || activeBusy || exporting}>{exporting ? <LoaderCircle className="spin" size={17} /> : <Download size={17} />} {t(exporting ? '正在保存…' : step === 4 ? '保存当前动效画面' : '下载头像')} <span>PNG ↗</span></button>}<p><i /> {t(step === 4 ? '方形 PNG · 1200 × 1200 px' : step === 3 ? 'PNG · ' + exportSize + ' × ' + exportSize + ' px' : isIllustration ? '手绘样例 · 本机配色与导出' : '照片仅在本机处理')}</p></div>
     </aside>
     </div>

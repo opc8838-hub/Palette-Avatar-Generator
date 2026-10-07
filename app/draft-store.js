@@ -2,18 +2,21 @@
 const DB = 'tone-duo-studio', STORE = 'drafts';
 async function connect() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore(STORE);
+    const request = indexedDB.open(DB, 2);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(STORE)) request.result.createObjectStore(STORE);
+      if (!request.result.objectStoreNames.contains('looks')) request.result.createObjectStore('looks');
+    };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
     request.onblocked = () => reject(Error('本机草稿暂不可用，请关闭其他工作室标签页后重试。'));
   });
 }
-async function transaction(mode, action) {
+async function transaction(mode, action, storeName = STORE) {
   const db = await connect();
   try {
     return await new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE, mode), request = action(tx.objectStore(STORE));
+      const tx = db.transaction(storeName, mode), request = action(tx.objectStore(storeName));
       tx.oncomplete = () => resolve(request.result);
       tx.onerror = () => reject(tx.error || request.error);
       tx.onabort = () => reject(tx.error || Error('草稿保存被中断。'));
@@ -26,10 +29,29 @@ export async function readDraft() {
   if (draft.version !== 1 || !draft.settings || !['photo', 'illustration'].includes(draft.settings.portraitFamily)) throw Error('此草稿版本暂不支持恢复。');
   return draft;
 }
-export async function writeDraft(settings, photo, thumbnail, sourceName) {
+export async function writeDraft(settings, photo, thumbnail, sourceName, collection) {
   const draft = { version: 1, savedAt: Date.now(), settings, photo, thumbnail, sourceName };
-  await transaction('readwrite', store => store.put(draft, 'latest'));
+  if (collection) {
+    const db = await connect();
+    try {
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction([STORE, 'looks'], 'readwrite');
+        tx.objectStore(STORE).put(draft, 'latest');
+        tx.objectStore('looks').put({ version: 1, items: collection.items }, collection.key);
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error || Error('配色保存被中断。'));
+      });
+    } finally { db.close(); }
+  } else await transaction('readwrite', store => store.put(draft, 'latest'));
   return draft;
+}
+export async function readLooks(key) {
+  const result = await transaction('readonly', store => store.get(key), 'looks');
+  return result?.version === 1 && Array.isArray(result.items) ? result.items : [];
+}
+export async function writeLooks(key, items) {
+  await transaction('readwrite', store => store.put({ version: 1, items }, key), 'looks');
 }
 export async function decodeDraftPhoto(blob, name) {
   if (!(blob instanceof Blob)) throw Error('草稿照片不完整，请重新上传。');

@@ -26,3 +26,7 @@ mockup-controller.js: 增加 setCanvas 直接更新内外屏；main.js 暴露 se
 avatar-package.js: 浏览器生成无压缩 ZIP，九张 PNG + 配色 JSON + 说明；CRC32、中央目录和文件下载。
 draft-store.js: IndexedDB 显式保存一份草稿，含本机处理后的照片与设置；不做云上传，不作为自动存档。
 avatar-engine.js: 单图导出可选 256/512/1024 像素。
+
+saved-looks.js: 配色快照、去重、每人像 5 套上限和勾选过滤。
+draft-store.js: IndexedDB 升级至 2，保留旧草稿；收藏按人像 key 隔离，收藏与最新草稿在同一事务中写入。
+avatar-package.js: 收藏 ZIP 按每套三版 × 三尺寸导出，以 look-NN 区分文件并附配色清单；不打包未勾选色卡。
